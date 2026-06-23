@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday, My Love</title>
+        <link rel="stylesheet" href="gallery.css">
+        <style>
+            /* Modal letter & gallery styles (kept here to avoid adding files) */
+            .modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.35); z-index: 9999 }
+            .modal.open { display: flex }
+            .modal-card { background: #fff; border-radius: 12px; padding: 28px; max-width: 760px; width: 92%; box-shadow: 0 30px 80px rgba(0,0,0,0.2); }
+            .modal-card h1{margin:0 0 12px;color:#ff83ab}
+            .modal-letter{min-height:160px;white-space:pre-wrap;text-align:left;color:#333;line-height:1.6;border:1px solid #f3d6e0;padding:18px;border-radius:8px;background:#fff}
+            .modal-controls{display:flex;gap:10px;justify-content:center;margin-top:14px}
+            .modal .btn{background:#ffb3d8;color:#fff}
+            .button:disabled,
+            .btn:disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+
+            /* Gallery scroll row */
+            .scroll-row{display:flex;gap:12px;overflow-x:auto;padding:12px;margin-top:12px}
+            .scroll-item{flex:0 0 auto;width:220px;border-radius:8px;overflow:hidden;background:#fff;border:1px solid #f3d6e0}
+            .scroll-item img{width:100%;height:140px;object-fit:cover;display:block}
+            .gallery-video{width:100%;max-height:360px;border-radius:8px;background:#000}
+            .confetti-piece{position:fixed;z-index:10000;width:10px;height:10px;opacity:0.95;pointer-events:none;}
+        </style>
+</head>
+<body>
+    <div class="gallery-container" id="galleryContainer">
+        <!-- Left Gallery -->
+        <div class="gallery-side">
+            <div class="gallery-image"> <img src="1739279655464.jpg" alt="Photo 1"> </div>
+            <div class="gallery-image"> <img src="IMG_20231021_161246_516.jpg" alt="Photo 2"> </div>
+            <div class="gallery-image"> <img src="IMG_20231213_152112.jpg" alt="Photo 3"> </div>
+        </div>
+
+        <!-- Center Content -->
+        <div class="center-content">
+            <p class="small-note top-note">To my one and only</p>
+            <h1>Your special day</h1>
+            <p class="small-note bottom-note">Made with love, just for you</p>
+            <div class="button-group">
+                <button class="button" id="playMusicBtn" onclick="playMusic()">Play Music</button>
+                <button class="button" id="proceedBtn" onclick="proceed()" disabled>Proceed</button>
+                <button class="button" id="openGalleryBtn" onclick="openGallery()" disabled>Open</button>
+            </div>
+            <audio id="bgAudio" src="@coldplay - Yellow (Lyrics).mp3" preload="auto"></audio>
+        </div>
+
+        <!-- Right Gallery -->
+        <div class="gallery-side-right">
+            <div class="gallery-image-right"> <img src="IMG_20240913_123905.jpg" alt="Photo 4"> </div>
+            <div class="gallery-image-right"> <img src="IMG_20250310_172704.jpg" alt="Photo 5"> </div>
+            <div class="gallery-image-right"> <img src="IMG_20251225_223100_521.jpg" alt="Photo 6"> </div>
+        </div>
+    </div>
+
+    <script>
+        function playMusic() {
+            const audio = document.getElementById('bgAudio');
+            const playBtn = document.getElementById('playMusicBtn');
+            const proceedBtn = document.getElementById('proceedBtn');
+            if (!audio) return;
+            audio.play().then(() => {
+                playBtn.textContent = 'Playing...';
+                playBtn.disabled = true;
+                proceedBtn.disabled = false;
+                audioStarted = true;
+                updateGalleryButtonState();
+                try { sessionStorage.setItem('bgPlaying','1'); } catch(e){}
+            }).catch(() => {
+                alert('Please press play again so the browser can start the music.');
+            });
+        }
+
+                // Modal letter implementation so audio continues uninterrupted
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-card">
+                        <h1>Happy Birthday ❤️</h1>
+                        <div id="modalLetter" class="modal-letter"></div>
+                        <div class="modal-controls">
+                            <button class="btn" id="modalReplay">Replay</button>
+                            <button class="btn" id="modalClose">Close</button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(modal);
+
+                const modalLetterEl = modal.querySelector('#modalLetter');
+                const openGalleryBtnEl = document.getElementById('openGalleryBtn');
+                let audioStarted = false;
+                let letterRead = false;
+                let proceeded = false;
+                function updateGalleryButtonState() {
+                    openGalleryBtnEl.disabled = !(proceeded && audioStarted && letterRead);
+                }
+                updateGalleryButtonState();
+                let typingInterval;
+                const letterMessage = `Hi mahal,\n\nHappy birthday!   i wish you all the best!\n\you know how much i love you \n\n ayaw ko kasi na dimakapag bigay sa iyo ngayong birthday mo kasi babawi ako.\n\n basta gusto lang kita batiin sa gantong way eto nalang naiisip ko e wala ng ibang paraan sana maging happy ka today mahal iknow mabibitin ka here but hindi lang to yon hold ka muna here pakinggan moy song mahal ko para sayo yan HAPPY BIRTHDAY, pano okay na muna to sorry uli ILOVEYOU!\n\n`;
+                function startTyping() {
+                    clearInterval(typingInterval);
+                    modalLetterEl.textContent = '';
+                    let i = 0;
+                    // disable gallery until finished
+                    try { letterRead = false; sessionStorage.setItem('letterRead','0'); } catch(e){}
+                    proceeded = true;
+                    updateGalleryButtonState();
+                    typingInterval = setInterval(() => {
+                        modalLetterEl.textContent = letterMessage.slice(0, i);
+                        i++;
+                        if (i > letterMessage.length) {
+                            clearInterval(typingInterval);
+                            try { letterRead = true; sessionStorage.setItem('letterRead','1'); } catch(e){}
+                            updateGalleryButtonState();
+                        }
+                    }, 30);
+                }
+
+                // Ensure replay reliably restarts typing
+                const modalReplayBtn = modal.querySelector('#modalReplay');
+                modalReplayBtn.addEventListener('click', () => { startTyping(); modalReplayBtn.blur(); });
+                const modalCloseBtn = modal.querySelector('#modalClose');
+                modalCloseBtn.addEventListener('click', () => { modal.classList.remove('open'); modalCloseBtn.blur(); });
+
+                // Gallery modal (video + horizontally scrollable images)
+                const galleryModal = document.createElement('div');
+                galleryModal.className = 'modal';
+                galleryModal.id = 'galleryModal';
+                galleryModal.innerHTML = `
+                    <div class="modal-card">
+                        <h1>Our Gallery</h1>
+                        <div class="scroll-row" id="scrollRow"></div>
+                        <div class="modal-controls">
+                            <button class="btn" id="galleryClose">Close</button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(galleryModal);
+
+// Populate scroll row with ALL gallery images from /picture/ folder
+        (function populateGallery() {
+          const allImages = [
+            '1739279655464.jpg', 'IMG_20231021_161239_075.jpg', 'IMG_20231021_161246_516.jpg',
+            'IMG_20231021_161252_124.jpg', 'IMG_20231021_161255_156.jpg', 'IMG_20231207_162707.jpg',
+            'IMG_20231213_152112 (1).jpg', 'IMG_20231213_152112.jpg', 'IMG_20240101_105256_1.jpg',
+            'IMG_20240104_160351.jpg', 'IMG_20240223_193959.jpg', 'IMG_20240223_194005.jpg',
+            'IMG_20240223_194044.jpg', 'IMG_20240421_163842.jpg', 'IMG_20240421_163850.jpg',
+            'IMG_20240421_164513.jpg', 'IMG_20240421_164616.jpg', 'IMG_20240421_170527.jpg',
+            'IMG_20240421_170612.jpg', 'IMG_20240421_170632.jpg', 'IMG_20240421_170650.jpg',
+            'IMG_20240827_084749.jpg', 'IMG_20240827_085147.jpg', 'IMG_20240913_123859.jpg',
+            'IMG_20240913_123905.jpg', 'IMG_20241004_135958.jpg', 'IMG_20241115_153552.jpg',
+            'IMG_20241126_143504.jpg', 'IMG_20241213_084802.jpg', 'IMG_20250117_131740.jpg',
+            'IMG_20250117_131744.jpg', 'IMG_20250310_172704 (1).jpg', 'IMG_20250310_172704.jpg',
+            'IMG_20250310_172719.jpg', 'IMG_20251106_234440_539.jpg', 'IMG_20251225_215141_672.jpg',
+            'IMG_20251225_223100_521 (1).jpg', 'IMG_20251225_223100_521.jpg', 'IMG_20260320_124249_431.jpg',
+            'IMG_20260320_124304_866.jpg', 'Messenger_creation_219109701197384.jpeg',
+            'Messenger_creation_55CF023A-3188-4412-9924-1A955A8619B6.jpeg',
+            'Messenger_creation_C36A0778-7F6C-4157-B91C-3BAF7C28135F.jpeg',
+            'Messenger_creation_D77ED026-447F-4151-8F02-44FC35178482.jpeg',
+            'received_958923635834264.jpeg', 'Screenshot_2024-06-12-20-13-43-091_com.miui.gallery.jpg'
+          ];
+          const srcs = allImages.map(f => f);
+                    const row = galleryModal.querySelector('#scrollRow');
+                    srcs.forEach(s => {
+                        const it = document.createElement('div'); it.className = 'scroll-item';
+                        const im = document.createElement('img'); im.src = s; im.alt = 'Gallery image';
+                        it.appendChild(im);
+                        row.appendChild(it);
+                    });
+                })();
+
+                galleryModal.querySelector('#galleryClose').addEventListener('click', () => { galleryModal.classList.remove('open'); });
+
+                function createConfetti() {
+                    const colors = ['#ff5fa2', '#ffb5d1', '#ffdce3', '#fff1f7', '#f8c6de'];
+                    const count = 50;
+                    for (let i = 0; i < count; i++) {
+                        const confetti = document.createElement('div');
+                        confetti.className = 'confetti-piece';
+                        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                        confetti.style.left = Math.random() * 100 + '%';
+                        confetti.style.top = '-10px';
+                        confetti.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
+                        const speed = 2000 + Math.random() * 1200;
+                        document.body.appendChild(confetti);
+                        requestAnimationFrame(() => {
+                            confetti.style.transition = 'transform ' + speed + 'ms ease-out, top ' + speed + 'ms ease-out, opacity 1s ease-out';
+                            confetti.style.top = '110%';
+                            confetti.style.transform = 'translateY(20px) rotate(' + Math.random() * 720 + 'deg)';
+                            confetti.style.opacity = '0';
+                        });
+                        setTimeout(() => confetti.remove(), speed + 300);
+                    }
+                }
+
+                function openGallery() {
+          // only open if button is not disabled
+          if (!openGalleryBtnEl.disabled) {
+            galleryModal.classList.add('open');
+            createConfetti();
+          }
+                }
+
+                function proceed() {
+                        // save current time for consistency (optional)
+                        try {
+                                const audio = document.getElementById('bgAudio');
+                                if (audio) sessionStorage.setItem('bgTime', String(audio.currentTime || 0));
+                        } catch(e){}
+                        // open modal instead of navigating so audio keeps playing
+                        modal.classList.add('open');
+                        proceeded = true;
+                        letterRead = false;
+                        try { sessionStorage.setItem('letterRead','0'); } catch(e){}
+                        updateGalleryButtonState();
+                        startTyping();
+                }
+
+                // openGallery() is exposed for the button
+                window.openGallery = openGallery;
+    </script>
+
+</body>
+</html>
